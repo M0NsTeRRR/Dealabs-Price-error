@@ -100,7 +100,8 @@ while True:
             logger.info(f'New page detected (page={config["page"]})')
             sleep(1)
         else:
-            if last_price_error != comments[-1]:
+            if last_price_error != comments[-1].get('id'):
+                logger.info(f'New price error detected (comment={comments[-1].get("id")})')
                 server_smtp = smtplib.SMTP(config["email"]["email-sender"]["smtp_domain"], config["email"]["email-sender"]["smtp_port"])
                 server_smtp.ehlo()
                 server_smtp.starttls()
@@ -108,6 +109,6 @@ while True:
                 server_smtp.sendmail("Dealabs-Price-error", config["email"]["email-receivers"], "New DEAL")
                 server_smtp.close()
             sleep(config["delay"])
-        last_price_error = comments[-1]
+        last_price_error = comments[-1].get('id')
     except Exception as e:
         logger.error("{error}".format(error=e))
