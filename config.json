@@ -1,0 +1,16 @@
+{
+  "topic": "https://www.dealabs.com/discussions/le-topic-des-erreurs-de-prix-1056379",
+  "page": 300,
+  "delay": 60,
+  "email": {
+    "email-sender": {
+      "smtp_domain": "smtp.gmail.com",
+      "smtp_port": 587,
+      "smtp_email": "",
+      "smtp_password": ""
+    },
+    "email-receivers": [
+      ""
+    ]
+  }
+}
