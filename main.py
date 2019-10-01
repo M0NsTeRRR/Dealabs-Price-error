@@ -97,7 +97,7 @@ except Exception as e:
     sys_exit(1)
 
 
-def get_mail(deal):
+def get_mail_content(deal):
     price_error_links = comments[-1].find('div', {"class": "comment-body"}) \
                                     .find('div', {"class": "userHtml-content"}) \
                                     .find_all('a')
@@ -122,7 +122,17 @@ def get_mail(deal):
     return 'Subject: {}\n\n{}'.format("New Dealabs Price error", text)
 
 
-last_price_error = ""
+def send_mail(deal):
+    server_smtp = smtplib.SMTP(config["email"]["email-sender"]["smtp_domain"],
+                               config["email"]["email-sender"]["smtp_port"])
+    server_smtp.ehlo()
+    server_smtp.starttls()
+    server_smtp.login(config["email"]["email-sender"]["smtp_email"], config["email"]["email-sender"]["smtp_password"])
+    server_smtp.sendmail("Dealabs-Price-error", config["email"]["email-receivers"], get_mail_content(deal))
+    server_smtp.close()
+
+
+last_price_error = []
 scraper = create_scraper()
 
 while True:
@@ -147,15 +157,17 @@ while True:
             logger.info(f'New page detected (page={config["page"]})')
             sleep(1)
         else:
-            if last_price_error != comments[-1].get('id'):
+            # at boot init the list
+            if not last_price_error:
+                last_price_error = [comment.get('id') for comment in comments[-5:]]
+            # check if the Price error was already registered in cache
+            if comments[-1].get('id') in last_price_error:
+                logger.info(f'Price error already registered (comment={comments[-1].get("id")})')
+                last_price_error = [comment.get('id') for comment in comments[-5:]]
+            else:
                 logger.info(f'New price error detected (comment={comments[-1].get("id")})')
-                server_smtp = smtplib.SMTP(config["email"]["email-sender"]["smtp_domain"], config["email"]["email-sender"]["smtp_port"])
-                server_smtp.ehlo()
-                server_smtp.starttls()
-                server_smtp.login(config["email"]["email-sender"]["smtp_email"], config["email"]["email-sender"]["smtp_password"])
-                server_smtp.sendmail("Dealabs-Price-error", config["email"]["email-receivers"], get_mail(comments[-1]))
-                server_smtp.close()
+                send_mail(comments[-1])
+                last_price_error = last_price_error[-4:] + comments[-1].get('id')
             sleep(config["delay"])
-        last_price_error = comments[-1].get('id')
     except Exception as e:
         logger.error("{error}".format(error=e))
