@@ -42,8 +42,6 @@ from sys import exit as sys_exit
 from time import sleep
 from datetime import datetime
 import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 
 from bs4 import BeautifulSoup
 from cfscrape import create_scraper
@@ -53,9 +51,20 @@ logger = logging.getLogger(__name__)
 
 # get configuration from environment variables
 config = {
-    "topic": int(environ.get("DEALABS_TOPIC", "1800")),
-    "page": int(environ.get("DEALABS_PAGE", "0")),
-    "delay": int(environ.get("DEALABS_DELAY", "180"))
+    "topic": str(environ.get("DEALABS_TOPIC", "https://www.dealabs.com/discussions/le-topic-des-erreurs-de-prix-1056379")),
+    "page": int(environ.get("DEALABS_PAGE", "300")),
+    "delay": int(environ.get("DEALABS_DELAY", "60")),
+    "email": {
+        "email-sender": {
+          "smtp_domain": str(environ.get("DEALABS_SMTP_DOMAIN", "smtp.gmail.com")),
+          "smtp_port": int(environ.get("DEALABS_SMTP_PORT", "587")),
+          "smtp_email": str(environ.get("DEALABS_SMTP_EMAIL", "")),
+          "smtp_password": str(environ.get("DEALABS_SMTP_PASSWORD", ""))
+        },
+        "email-receivers": [
+          str(environ.get("DEALABS_EMAIL_RECEIVER", ""))
+        ]
+      }
 }
 
 # get configuration from file
@@ -74,6 +83,14 @@ try:
     if "page" not in config or not isinstance(config["page"], int) or config["page"] < 0:
         raise Exception("config.json not filled properly")
     if "delay" not in config or 60 <= config["delay"] >= 3600:
+        raise Exception("config.json not filled properly")
+    if "smtp_domain" not in config["email"]["email-sender"] or not isinstance(config["email"]["email-sender"]["smtp_domain"], str):
+        raise Exception("config.json not filled properly")
+    if "smtp_port" not in config["email"]["email-sender"] or 1 < config["delay"] > 65535:
+        raise Exception("config.json not filled properly")
+    if "smtp_email" not in config["email"]["email-sender"] or not isinstance(config["email"]["email-sender"]["smtp_email"], str):
+        raise Exception("config.json not filled properly")
+    if "smtp_password" not in config["email"]["email-sender"] or not isinstance(config["email"]["email-sender"]["smtp_password"], str):
         raise Exception("config.json not filled properly")
 except Exception as e:
     logger.error("{error}".format(error=e))

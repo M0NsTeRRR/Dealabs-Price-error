@@ -15,6 +15,9 @@ You must have Dealabs permission to use this software.
 
 ## Install
 
+- Tested with a gmail account
+- You must provide your email and a password application (https://myaccount.google.com/apppasswords)
+
 ### Classic
 Install the requirements `pip install -r requirements.txt`
 
@@ -33,7 +36,7 @@ Fill config.json with some informations :
     },
     "email-receivers": [
       "myemail1@gmail.com",
-      "myemail2@gmail.com"
+      "myemail2@hotmail.com"
     ]
   }
 }
@@ -42,7 +45,12 @@ Start the script `python main.py`
 
 ### Docker
 
-TO DO
+Docker version support only one email receiver (start many containers to fix the problem)
+
+Fill environment variables
+
+`docker run -d --restart=always -e "DEALABS_TOPIC=" -e "DEALABS_PAGE=" -e "DEALABS_DELAY=" -e "DEALABS_SMTP_DOMAIN=" 
+-e "DEALABS_SMTP_PORT=" -e "DEALABS_SMTP_EMAIL=" -e "DEALABS_SMTP_PASSWORD=" -e "DEALABS_EMAIL_RECEIVER=" monsterrr/dealabs-price-error:latest`
 
 # Licence
 
