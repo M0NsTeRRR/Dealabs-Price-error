@@ -65,7 +65,7 @@ config = {
         "email-receivers": [
           str(environ.get("DEALABS_EMAIL_RECEIVER", ""))
         ]
-      }
+    }
 }
 
 # get configuration from file
