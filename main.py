@@ -41,6 +41,7 @@ from json import load, loads
 from sys import exit as sys_exit
 from time import sleep
 from datetime import datetime
+from urllib.parse import urlparse, parse_qs
 import smtplib
 
 from bs4 import BeautifulSoup
@@ -142,7 +143,11 @@ while True:
 
         # scrap the page
         r = scraper.get(url)
-        logger.debug(f'url = {url}')
+
+        # set the current page in case of redirection
+        config["page"] = parse_qs(urlparse(r.url).query)["page"][0]
+
+        logger.debug(f'url = {r.url}')
         soup = BeautifulSoup(r.content, 'html.parser')
 
         # get all Price error
