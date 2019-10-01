@@ -93,8 +93,8 @@ try:
         raise Exception("config.json not filled properly")
     if "smtp_password" not in config["email"]["email-sender"] or not isinstance(config["email"]["email-sender"]["smtp_password"], str):
         raise Exception("config.json not filled properly")
-except Exception as e:
-    logger.error("{error}".format(error=e))
+except Exception as error:
+    logger.error(f'{error}')
     sys_exit(1)
 
 
@@ -120,7 +120,7 @@ def get_mail_content(deal):
     Dealabs link : {comment_link}
     """
 
-    return 'Subject: {}\n\n{}'.format("New Dealabs Price error", text)
+    return f'Subject: "New Dealabs Price error"\n\n{text}'
 
 
 def send_mail(deal):
@@ -162,17 +162,25 @@ while True:
             logger.info(f'New page detected (page={config["page"]})')
             sleep(1)
         else:
+            # get list of ID of price error comments
+            price_error_list = [comment.get('id') for comment in comments]
+
             # at boot init the list
             if not last_price_error:
-                last_price_error = [comment.get('id') for comment in comments[-5:]]
+                last_price_error = price_error_list[-40:]
+
             # check if the Price error was already registered in cache
             if comments[-1].get('id') in last_price_error:
                 logger.info(f'Price error already registered (comment={comments[-1].get("id")})')
-                last_price_error = [comment.get('id') for comment in comments[-5:]]
             else:
-                logger.info(f'New price error detected (comment={comments[-1].get("id")})')
-                send_mail(comments[-1])
-                last_price_error = last_price_error[-4:] + comments[-1].get('id')
+                if last_price_error[-1] in price_error_list[-40:]:
+                    first_price_error = price_error_list.index(last_price_error[-1]) + 1
+                else:
+                    first_price_error = 0
+                for index_price_error in range(first_price_error, len(comments)):
+                    logger.info(f'New price error detected (comment={comments[index_price_error].get("id")})')
+                    send_mail(comments[index_price_error])
+            last_price_error = price_error_list[-40:]
             sleep(config["delay"])
-    except Exception as e:
-        logger.error("{error}".format(error=e))
+    except Exception as error:
+        logger.error(f'{error}')
