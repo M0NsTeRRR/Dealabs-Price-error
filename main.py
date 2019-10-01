@@ -37,12 +37,16 @@
 
 import logging
 from os import environ
-from json import load
+from json import load, loads
 from sys import exit as sys_exit
 from time import sleep
+from datetime import datetime
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 from bs4 import BeautifulSoup
 from cfscrape import create_scraper
-import smtplib
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
 logger = logging.getLogger(__name__)
@@ -75,6 +79,32 @@ except Exception as e:
     logger.error("{error}".format(error=e))
     sys_exit(1)
 
+
+def get_mail(deal):
+    price_error_links = comments[-1].find('div', {"class": "comment-body"}) \
+                                    .find('div', {"class": "userHtml-content"}) \
+                                    .find_all('a')
+    formatted_error_links = ""
+    for link in price_error_links:
+        formatted_error_links += link["title"] + "\n"
+
+    comment_link = loads(
+        deal.find('div', {"class": "comment-footer"})
+            .find_all('button')[-1]
+            .get('data-popover')
+    )['tplData']['url']
+    comment_timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    text = f"""
+    Links :
+    {formatted_error_links}
+    ----------------------------------------
+    Timestamp : {comment_timestamp}
+    Dealabs link : {comment_link}
+    """
+
+    return 'Subject: {}\n\n{}'.format("New Dealabs Price error", text)
+
+
 last_price_error = ""
 scraper = create_scraper()
 
@@ -106,7 +136,7 @@ while True:
                 server_smtp.ehlo()
                 server_smtp.starttls()
                 server_smtp.login(config["email"]["email-sender"]["smtp_email"], config["email"]["email-sender"]["smtp_password"])
-                server_smtp.sendmail("Dealabs-Price-error", config["email"]["email-receivers"], "New DEAL")
+                server_smtp.sendmail("Dealabs-Price-error", config["email"]["email-receivers"], get_mail(comments[-1]))
                 server_smtp.close()
             sleep(config["delay"])
         last_price_error = comments[-1].get('id')
