@@ -145,7 +145,7 @@ while True:
         r = scraper.get(url)
 
         # set the current page in case of redirection
-        config["page"] = parse_qs(urlparse(r.url).query)["page"][0]
+        config["page"] = int(parse_qs(urlparse(r.url).query)["page"][0])
 
         logger.debug(f'url = {r.url}')
         soup = BeautifulSoup(r.content, 'html.parser')
