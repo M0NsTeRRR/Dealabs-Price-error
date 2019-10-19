@@ -81,7 +81,7 @@ except Exception as e:
 try:
     if "topic" not in config or not isinstance(config["topic"], str):
         raise Exception("config.json not filled properly")
-    if "page" not in config or not isinstance(config["page"], int) or config["page"] < 0:
+    if "page" not in config or not isinstance(config["page"], int) or config["page"] < 1:
         raise Exception("config.json not filled properly")
     if "delay" not in config or 60 <= config["delay"] >= 3600:
         raise Exception("config.json not filled properly")
@@ -144,43 +144,49 @@ while True:
         # scrap the page
         r = scraper.get(url)
 
-        # set the current page in case of redirection
-        config["page"] = int(parse_qs(urlparse(r.url).query)["page"][0])
+        # get the page number
+        page = int(parse_qs(urlparse(r.url).query)["page"][0])
 
-        logger.debug(f'url = {r.url}')
-        soup = BeautifulSoup(r.content, 'html.parser')
+        if page > 1 or (config["page"] == 1 and page == 1):
+            # set the current page number in case of redirection
+            config["page"] = page
 
-        # get all Price error
-        comments = soup.find_all('article', {"class": "comments-list-item"})
+            logger.debug(f'url = {r.url}')
+            soup = BeautifulSoup(r.content, 'html.parser')
 
-        # check if there is a new page
-        next_page = soup.find('a', {"class": "pagination-next"})
+            # get all Price error
+            comments = soup.find_all('article', {"class": "comments-list-item"})
 
-        if next_page is not None:
-            new_page_dectected = True
-            config["page"] += 1
-            logger.info(f'New page detected (page={config["page"]})')
-            sleep(1)
-        else:
-            # get list of ID of price error comments
-            price_error_list = [comment.get('id') for comment in comments]
+            # check if there is a new page
+            next_page = soup.find('a', {"class": "pagination-next"})
 
-            # at boot init the list
-            if not last_price_error:
-                last_price_error = price_error_list[-40:]
-
-            # check if the Price error was already registered in cache
-            if comments[-1].get('id') in last_price_error:
-                logger.info(f'Price error already registered (comment={comments[-1].get("id")})')
+            if next_page is not None:
+                new_page_dectected = True
+                config["page"] += 1
+                logger.info(f'New page detected (page={config["page"]})')
+                sleep(1)
             else:
-                if last_price_error[-1] in price_error_list[-40:]:
-                    first_price_error = price_error_list.index(last_price_error[-1]) + 1
+                # get list of ID of price error comments
+                price_error_list = [comment.get('id') for comment in comments]
+
+                # at boot init the list
+                if not last_price_error:
+                    last_price_error = price_error_list[-40:]
+
+                # check if the Price error was already registered in cache
+                if comments[-1].get('id') in last_price_error:
+                    logger.info(f'Price error already registered (comment={comments[-1].get("id")})')
                 else:
-                    first_price_error = 0
-                for index_price_error in range(first_price_error, len(comments)):
-                    logger.info(f'New price error detected (comment={comments[index_price_error].get("id")})')
-                    send_mail(comments[index_price_error])
-            last_price_error = price_error_list[-40:]
-            sleep(config["delay"])
+                    if last_price_error[-1] in price_error_list[-40:]:
+                        first_price_error = price_error_list.index(last_price_error[-1]) + 1
+                    else:
+                        first_price_error = 0
+                    for index_price_error in range(first_price_error, len(comments)):
+                        logger.info(f'New price error detected (comment={comments[index_price_error].get("id")})')
+                        send_mail(comments[index_price_error])
+                last_price_error = price_error_list[-40:]
+                sleep(config["delay"])
+        else:
+            sleep(1)
     except Exception as error:
         logger.error(f'{error}')
