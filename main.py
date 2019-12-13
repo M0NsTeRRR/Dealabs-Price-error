@@ -174,8 +174,10 @@ while True:
                     last_price_error = price_error_list[-40:]
 
                 # check if the Price error was already registered in cache
-                if comments[-1].get('id') in last_price_error:
-                    logger.info(f'Price error already registered (comment={comments[-1].get("id")})')
+                if len(comments) == 0:
+                    logger.error(f'No new page founds and no comments found (may be cloudflare bot detection ?)')
+                elif comments[-1].get('id') in last_price_error:
+                    logger.debug(f'Price error already registered (comment={comments[-1].get("id")})')
                 else:
                     if last_price_error[-1] in price_error_list[-40:]:
                         first_price_error = price_error_list.index(last_price_error[-1]) + 1
