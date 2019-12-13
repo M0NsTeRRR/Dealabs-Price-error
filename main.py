@@ -136,6 +136,8 @@ def send_mail(deal):
 last_price_error = []
 scraper = create_scraper()
 
+logger.info(f"Bot started")
+
 while True:
     try:
         new_page_dectected = False
