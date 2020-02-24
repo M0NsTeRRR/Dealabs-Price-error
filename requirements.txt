@@ -5,5 +5,5 @@ cfscrape==2.0.8
 chardet==3.0.4
 idna==2.8
 requests==2.22.0
-soupsieve==1.9.5
+soupsieve==2.0
 urllib3==1.25.8
