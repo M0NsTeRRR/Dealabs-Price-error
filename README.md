@@ -1,6 +1,4 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d071f01d0d074b1aaa718747cc6b787b)](https://www.codacy.com/manual/M0NsTeRRR/Dealabs-Price-error?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=M0NsTeRRR/Dealabs-Price-error&amp;utm_campaign=Badge_Grade)
-[![Docker Automated build](https://img.shields.io/docker/cloud/automated/monsterrr/dealabs-price-error?style=flat-square)](https://hub.docker.com/r/monsterrr/dealabs-price-error)
-[![Docker Build Status](https://img.shields.io/docker/cloud/build/monsterrr/dealabs-price-error?style=flat-square)](https://hub.docker.com/r/monsterrr/dealabs-price-error)
 
 The goal of this project is to get an email when a new price error appear on Dealabs (https://www.dealabs.com/). 
 You must have Dealabs permission to use this software.
@@ -64,4 +62,4 @@ Copyright © Ludovic Ortega, 2019
 
 Contributor(s):
 
--Ortega Ludovic - mastership@hotmail.fr
+-Ortega Ludovic - ludovic.ortega@adminafk.fr
